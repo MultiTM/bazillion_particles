@@ -81,3 +81,6 @@ build_BackUpThisFolder_ButDontShipItWithYourGame
 build_BurstDebugInformation_DoNotShip
 Recordings
 **/.DS_Store
+
+.idea/
+.vscode/
