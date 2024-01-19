@@ -1,0 +1,19 @@
+#pragma kernel CSMain
+#include <UnityShaderVariables.cginc>
+
+RWStructuredBuffer<float4x4> positionBuffer;
+RWStructuredBuffer<float3> velocityBuffer;
+
+[numthreads(16, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float4x4 particleMatrix = positionBuffer[id.x];
+    const float3 position = float3(particleMatrix[0][3], particleMatrix[1][3], particleMatrix[2][3]); // get position from matrix
+    const float3 velocity = velocityBuffer[id.x]; // get velocity from buffer
+    float3 newPosition = position + velocity * unity_DeltaTime.x; // calculate new position
+    particleMatrix[0][3] = newPosition.x;
+    particleMatrix[1][3] = newPosition.y;
+    particleMatrix[2][3] = newPosition.z;
+
+    positionBuffer[id.x] = particleMatrix;
+}

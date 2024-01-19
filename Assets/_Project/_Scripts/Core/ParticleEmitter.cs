@@ -1,29 +1,57 @@
-using _Project._Scripts.Infrastructure.Utils;
 using UnityEngine;
 
-public class ParticleEmitter : MonoBehaviour
+namespace _Project._Scripts.Infrastructure.Core
 {
-    [SerializeField] private ParticleSystem _particleSystem;
-    [SerializeField] private Transform _target;
-    private ParticleSystem.Particle[] particles = new ParticleSystem.Particle[50];
-
-    private void Update()
+    public class ParticleEmitter : MonoBehaviour
     {
-        particles.Clean();
-        var count = _particleSystem.GetParticles(particles);
+        [SerializeField] private int _maxParticles = 1_000_000;
+        [SerializeField] private ComputeShader _computeShader;
+        [SerializeField] private Mesh _mesh;
+        [SerializeField] private Material _material;
+        
+        private int _kernel;
+        private ComputeBuffer _positionBuffer;
+        private ComputeBuffer _velocityBuffer;
+        private Matrix4x4[] _particles;
+        private Vector3[] _velocities;
 
-        for (int i = 0; i < count; i++)
+        private void Start()
         {
-            var particle = particles[i];
-
-            var particleSystemPosition = _particleSystem.transform.TransformPoint(particle.position);
-            var targetPosition = _target.position;
-
-            var particleTargetPosition = (targetPosition - particleSystemPosition) * ( particle.remainingLifetime / particle.startLifetime);
-            particle.position = _particleSystem.transform.InverseTransformPoint(targetPosition - particleTargetPosition);
-            particles[i] = particle;
+            _particles = new Matrix4x4[_maxParticles];
+            _velocities = new Vector3[_maxParticles];
+            for (int i = 0; i < _maxParticles; i++)
+            {
+                _particles[i] = Matrix4x4.TRS(Vector3.one, Quaternion.identity, Vector3.one);
+                _velocities[i] = Random.onUnitSphere * 0.1f;
+            }
+            
+            _positionBuffer = new ComputeBuffer(_maxParticles, sizeof(float) * 16, ComputeBufferType.Structured);
+            _positionBuffer.SetData(_particles);
+            _velocityBuffer = new ComputeBuffer(_maxParticles, sizeof(float) * 3, ComputeBufferType.Structured);
+            _velocityBuffer.SetData(_velocities);
+            _kernel = _computeShader.FindKernel("CSMain");
         }
 
-        _particleSystem.SetParticles(particles, count);
+        private void OnDestroy()
+        {
+            _positionBuffer?.Release();
+            _positionBuffer = null;
+            _velocityBuffer?.Release();
+            _velocityBuffer = null;
+        }
+
+        private void Update()
+        {
+            _computeShader.SetBuffer(_kernel, "positionBuffer", _positionBuffer);
+            _computeShader.SetBuffer(_kernel, "velocityBuffer", _velocityBuffer);
+            var workloads = Mathf.CeilToInt(_maxParticles / 16f);
+            _computeShader.Dispatch(_kernel, workloads, 1, 1);
+            
+            _positionBuffer.GetData(_particles);
+            _velocityBuffer.GetData(_velocities);
+            
+            Graphics.DrawMeshInstanced(_mesh, 0, _material, _particles);
+        }
     }
+    
 }
