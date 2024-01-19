@@ -29,11 +29,13 @@ namespace _Project._Scripts.Services
             await UnloadSceneAsync(ParticlesScene);
         }
 
-        private async UniTask UnloadSceneAsync(string sceneName){
+        private async UniTask UnloadSceneAsync(string sceneName)
+        {
             await SceneManager.UnloadSceneAsync(sceneName);
         }
 
-        private async UniTask LoadSceneAsync(string sceneName){
+        private async UniTask LoadSceneAsync(string sceneName)
+        {
             await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         }
     }

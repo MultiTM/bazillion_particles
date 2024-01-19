@@ -1,3 +1,4 @@
-public interface ISceneStarter {
+public interface ISceneStarter
+{
     public void StartScene();
 }

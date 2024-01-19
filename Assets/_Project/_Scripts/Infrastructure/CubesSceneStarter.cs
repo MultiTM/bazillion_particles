@@ -4,8 +4,8 @@ using Zenject;
 public class CubesSceneStarter : MonoBehaviour, ISceneStarter
 {
     [Inject]
-    private void Construct(){
-
+    private void Construct()
+    {
     }
 
     public void StartScene()

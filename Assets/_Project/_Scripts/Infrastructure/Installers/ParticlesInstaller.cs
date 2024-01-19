@@ -1,5 +1,5 @@
 using Zenject;
 
-public class ParticlesInstaller : MonoInstaller {
-
+public class ParticlesInstaller : MonoInstaller
+{
 }

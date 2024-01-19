@@ -25,15 +25,9 @@ namespace _Project._Scripts.Infrastructure.StateMachine
                 return;
             }
 
-            if (targetState.GetType() == _currentState?.GetType())
-            {
-                return;
-            }
-            
-            if (_currentState != null)
-            {
-                _currentState.Exit();
-            }
+            if (targetState.GetType() == _currentState?.GetType()) return;
+
+            if (_currentState != null) _currentState.Exit();
 
             _currentState = targetState;
             _currentState.Enter();
