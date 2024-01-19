@@ -1,24 +1,26 @@
+using _Project._Scripts.Infrastructure.Utils;
 using UnityEngine;
 
 public class ParticleEmitter : MonoBehaviour
 {
     [SerializeField] private ParticleSystem _particleSystem;
     [SerializeField] private Transform _target;
+    private ParticleSystem.Particle[] particles = new ParticleSystem.Particle[50];
 
     private void Update()
     {
-        var particles = new ParticleSystem.Particle[50];
+        particles.Clean();
         var count = _particleSystem.GetParticles(particles);
 
         for (int i = 0; i < count; i++)
         {
             var particle = particles[i];
 
-            Vector3 v1 = _particleSystem.transform.TransformPoint(particle.position);
-            Vector3 v2 = _target.position;
+            var particleSystemPosition = _particleSystem.transform.TransformPoint(particle.position);
+            var targetPosition = _target.position;
 
-            Vector3 tarPosi = (v2 - v1) *  (particle.remainingLifetime / particle.startLifetime);
-            particle.position = _particleSystem.transform.InverseTransformPoint(v2 - tarPosi);
+            var particleTargetPosition = (targetPosition - particleSystemPosition) * ( particle.remainingLifetime / particle.startLifetime);
+            particle.position = _particleSystem.transform.InverseTransformPoint(targetPosition - particleTargetPosition);
             particles[i] = particle;
         }
 
