@@ -10,10 +10,14 @@ namespace _Project._Scripts.Infrastructure.Core
         [SerializeField] private Material _material;
         
         private int _kernel;
+        private int _workloads;
         private ComputeBuffer _positionBuffer;
         private ComputeBuffer _velocityBuffer;
         private Matrix4x4[] _particles;
         private Vector3[] _velocities;
+        
+        private readonly uint[] _args = { 0, 0, 0, 0, 0 };
+        private ComputeBuffer _argsBuffer;
 
         private void Start()
         {
@@ -25,11 +29,25 @@ namespace _Project._Scripts.Infrastructure.Core
                 _velocities[i] = Random.onUnitSphere * 0.1f;
             }
             
-            _positionBuffer = new ComputeBuffer(_maxParticles, sizeof(float) * 16, ComputeBufferType.Structured);
+            _positionBuffer = new ComputeBuffer(_maxParticles, sizeof(float) * 16);
             _positionBuffer.SetData(_particles);
-            _velocityBuffer = new ComputeBuffer(_maxParticles, sizeof(float) * 3, ComputeBufferType.Structured);
+            _velocityBuffer = new ComputeBuffer(_maxParticles, sizeof(float) * 3);
             _velocityBuffer.SetData(_velocities);
             _kernel = _computeShader.FindKernel("CSMain");
+            
+            _computeShader.SetBuffer(_kernel, "positionBuffer", _positionBuffer);
+            _computeShader.SetBuffer(_kernel, "velocityBuffer", _velocityBuffer);
+            _material.SetBuffer("positionBuffer", _positionBuffer);
+            _workloads = Mathf.CeilToInt(_maxParticles / 100f);
+            
+            _argsBuffer = new ComputeBuffer(1, _args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+            
+            _args[0] = _mesh.GetIndexCount(0);
+            _args[1] = (uint)_maxParticles;
+            _args[2] = _mesh.GetIndexStart(0);
+            _args[3] = _mesh.GetBaseVertex(0);
+
+            _argsBuffer.SetData(_args);
         }
 
         private void OnDestroy()
@@ -38,19 +56,14 @@ namespace _Project._Scripts.Infrastructure.Core
             _positionBuffer = null;
             _velocityBuffer?.Release();
             _velocityBuffer = null;
+            _argsBuffer?.Release();
+            _argsBuffer = null;
         }
 
         private void Update()
         {
-            _computeShader.SetBuffer(_kernel, "positionBuffer", _positionBuffer);
-            _computeShader.SetBuffer(_kernel, "velocityBuffer", _velocityBuffer);
-            var workloads = Mathf.CeilToInt(_maxParticles / 16f);
-            _computeShader.Dispatch(_kernel, workloads, 1, 1);
-            
-            _positionBuffer.GetData(_particles);
-            _velocityBuffer.GetData(_velocities);
-            
-            Graphics.DrawMeshInstanced(_mesh, 0, _material, _particles);
+            _computeShader.Dispatch(_kernel, _workloads, 1, 1);
+            Graphics.DrawMeshInstancedIndirect(_mesh, 0, _material, new Bounds(Vector3.zero, Vector3.one * 1000), _argsBuffer);
         }
     }
     

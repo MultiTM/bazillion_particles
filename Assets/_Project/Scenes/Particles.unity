@@ -292,7 +292,7 @@ MonoBehaviour:
   _maxParticles: 1000000
   _computeShader: {fileID: 7200000, guid: 36c184d784b73445883efc605f1d053c, type: 3}
   _mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  _material: {fileID: 2100000, guid: 132dd722359c942158bff3b66197eb2d, type: 2}
+  _material: {fileID: 2100000, guid: c8e85109919224125afcc62b99274181, type: 2}
 --- !u!4 &79228518
 Transform:
   m_ObjectHideFlags: 0
