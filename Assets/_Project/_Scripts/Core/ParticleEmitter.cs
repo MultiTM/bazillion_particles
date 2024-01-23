@@ -26,7 +26,7 @@ namespace _Project._Scripts.Infrastructure.Core
             for (int i = 0; i < _maxParticles; i++)
             {
                 _particles[i] = Matrix4x4.TRS(Vector3.one, Quaternion.identity, Vector3.one);
-                _velocities[i] = Random.onUnitSphere * 0.1f;
+                _velocities[i] = Random.onUnitSphere * Random.Range(1f, 2f);
             }
             
             _positionBuffer = new ComputeBuffer(_maxParticles, sizeof(float) * 16);
@@ -63,7 +63,7 @@ namespace _Project._Scripts.Infrastructure.Core
         private void Update()
         {
             _computeShader.Dispatch(_kernel, _workloads, 1, 1);
-            Graphics.DrawMeshInstancedIndirect(_mesh, 0, _material, new Bounds(Vector3.zero, Vector3.one * 1000), _argsBuffer);
+            Graphics.DrawMeshInstancedIndirect(_mesh, 0, _material, new Bounds(Vector3.zero, Vector3.one * 100), _argsBuffer);
         }
     }
     
