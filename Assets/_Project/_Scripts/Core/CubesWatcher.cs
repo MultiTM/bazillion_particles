@@ -1,26 +1,17 @@
-using _Project._Scripts.Infrastructure;
-using _Project._Scripts.Infrastructure.GameStates;
 using UnityEngine;
-using Zenject;
+using UnityEngine.SceneManagement;
 
 public class CubesWatcher : MonoBehaviour
 {
-    private DistanceView _distanceView;
-    private Game _game;
-    private bool _areSpheresVisible = true;
-
     [SerializeField] private float _showSpheresDistance = 2f;
     [SerializeField] private float _loadParticlesSceneDistance = 1f;
     [SerializeField] private GameObject[] _spheres;
     [SerializeField] private MovingCube _redCube;
     [SerializeField] private MovingCube _greenCube;
-
-    [Inject]
-    private void Construct(Game game, DistanceView distanceView)
-    {
-        _game = game;
-        _distanceView = distanceView;
-    }
+    [SerializeField] private DistanceView _distanceView;
+    
+    private bool _areSpheresVisible = false;
+    private const string _particlesSceneName = "Particles";
 
     private void Start()
     {
@@ -42,7 +33,7 @@ public class CubesWatcher : MonoBehaviour
 
     private void LoadParticlesScene()
     {
-        _game.EnterState<ParticlesState>();
+        SceneManager.LoadScene(_particlesSceneName);
     }
 
     private void HideSpheres()
